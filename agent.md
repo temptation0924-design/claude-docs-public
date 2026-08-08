@@ -1,0 +1,166 @@
+# agent.md — C+ 에이전트 시스템 레지스트리
+
+> **역할**: 19명 에이전트 팀의 중앙 레지스트리 + 디스패치 규칙
+> **위치**: `~/.claude/agent.md`
+> **버전**: v2.2 | 2026-04-12
+> **스펙**: `~/.claude/docs/specs/c-plus-agent-system-design_20260412_v1.md`
+
+---
+
+## 1. 시스템 개요
+
+**구조**: 총괄매니저(Opus, 대표님 대화 전담) + 19명 전문 팀원(모델 등급별)
+**원칙**: 병렬 기본 / 실패 자동 승급 / 매니저는 조합만, 실행은 팀원
+
+### 설정
+
+mode: live
+<!-- mode: dry-run  ← 외부 쓰기 차단 모드 -->
+
+### dry-run 중앙 처리 규칙
+<!-- mode: dry-run 활성화 시 매니저가 모든 dispatch에 아래 프리픽스를 자동 삽입:
+"[DRY-RUN] 외부 쓰기(Notion API, Slack API) 실행 금지. 대신 '이럴 거였음: {내용}' 출력.
+ 로컬 파일 쓰기는 ~/.claude/tmp/dryrun/ 경로로 리디렉트."
+→ 개별 에이전트에 dry-run 로직 넣지 않음. 매니저가 중앙에서 주입.
+→ 경비원(security-guard) PreToolUse 훅에서도 dry-run 모드 시 Write/Notion/Slack 차단 보조. -->
+
+---
+
+## 2. 팀원 요약 (19명)
+
+| # | ID | 이름 | 등급 | 역할 | Layer | enabled |
+|---|-----|------|------|------|-------|---------|
+| 1 | rule-watcher | 규칙감시관 | Haiku | Notion TOP 5 쿼리 + 위반 DB update | 1 | true |
+| 2 | memory-keeper | 기억관리관 | Haiku | MEMORY.md + 개별 메모리 스캔 | 1 | true |
+| 3 | doc-librarian | 지침사서 | Haiku | rules/session/skill-guide 로드 | 1 | true |
+| 4 | tool-advisor | 모델추천관 | Haiku | 작업→모델 등급(Haiku/Sonnet/Opus/Fable) 매칭 (2026-07-07 역할 전환, ID 유지) | 1 | true |
+| 5 | notion-writer | 노션기록관 | Haiku | 작업기록/에러로그/위반 DB 저장 | 1 | true |
+| 6 | slack-courier | 슬랙배달관 | Haiku | #general-mode / #claude-study 발송 | 1 | true |
+| 7 | security-guard | 경비원 | Haiku | REF 훅 해석 + 위반 사전 차단 | 1 | true |
+| 8 | handoff-scribe | 핸드오프작성관 | Sonnet | handoffs/*.md 생성 | 2 | true |
+| 9 | code-reviewer | 코드리뷰관 | Sonnet | spec 준수 + 코드 품질 리뷰 | 2 | true |
+| 10 | qa-inspector | QA검사관 | Sonnet | /qa + /review + Playwright | 2 | true |
+| 11 | preflight-trio | Preflight검증관 | Sonnet×2+Opus×1 | 계획 품질 점검 + 3 Agent 병렬 구현 검증 | 2 | true |
+| 12 | janitor | 청소원 | Sonnet | 환경 유지 + 역사적 유물 경보 | 2 | true |
+| 13 | advisor | 자문전문가 | Sonnet | 에이전트 실패 진단 + 접근법 조정 | 2 | true |
+| 14 | study-coach | 복습카드관 | Opus | 학습 카드 (깊은 비유 + 개념) — ⚠️ 자동 트리거 폐지 (2026-07-07 B12), 수동만 | 3 | manual |
+| 15 | moodmaker | 분위기메이커 | Opus | 적시 유머/격려/축하 | 3 | true |
+| 16 | socratic-challenger | 아이디어검증관 | Opus | office-hours 소크라테스 질문 | 3 | true |
+| 17 | ceo-reviewer | CEO 리뷰어 | Opus | 전략 관점 플랜 리뷰 | 3 | true |
+| 18 | eng-reviewer | ENG 리뷰어 | Opus | 아키텍처 관점 플랜 리뷰 | 3 | true |
+| 19 | system-auditor | 외주 감사관 | Opus | C+ 시스템 정기 감사 | 3 | true |
+
+> 각 팀원 상세 프로필: `~/.claude/agents/{id}.md`
+
+> **레지스트리 외 에이전트 그룹 (2026-07-07 등재)** — `~/.claude/agents/`에는 위 C+ 19명 외 두 그룹이 더 있다:
+> - **legal-court-agent 7명**: legal-judge · legal-plaintiff-counsel · legal-defendant-counsel · legal-third-party-firm · legal-precedent-researcher · legal-similar-case-researcher · legal-expert-lawyer-researcher — 법률소송 1차 대응 전용 (2026-05-25 신설). 워크플로우: `~/legal-court-agent/WORKFLOW_v1.md`, 트리거는 skill-guide 「legal-court-agent」 참조
+> - **GSD 계열 24명**: `gsd-*` — GSD 플러그인 소속, gsd-* 스킬이 자체 dispatch
+>
+> 두 그룹은 C+ 세션 시작/종료 루틴의 자동 트리거 대상이 **아니다**.
+
+---
+
+## 3. 자동 트리거 테이블
+
+| 상황 | dispatch 팀원 (병렬 표시) | Stage |
+|------|------------------------|-------|
+| **세션 시작** | 규칙감시관 + 기억관리관 + 지침사서 + 분위기메이커 (4명 병렬) | 1 |
+| **세션 시작 (매일 첫 세션)** | 위 4명 + 청소원 (5명 병렬) | 1 |
+| **세션 시작 답변 후** | 모델추천관 (1명) | 2 |
+| **세션 종료 Stage 1** | 규칙감시관 + 노션기록관 + 노션기록관(에러로그) + 핸드오프작성관 + 청소원 (5명 병렬 — 복습카드관 2026-07-07 폐지). Workflow 옵션: `workflows/session-end.workflow.js` (session.md 참조) | 1 |
+| **세션 종료 Stage 2** | 슬랙배달관 (Stage 1 결과 필요) | 2 |
+| **MODE 1 맥락 수집** | 기억관리관 + 지침사서 + 모델추천관 (3명 병렬) | 1 |
+| **MODE 1 리뷰** | CEO리뷰어 + ENG리뷰어 (2명 병렬) | - |
+| **MODE 1 Preflight** | Preflight검증관 (내부 3명 병렬) | - |
+| **MODE 2 코드 완료** | 코드리뷰관 (1명) | - |
+| **MODE 3 진입** | QA검사관 + 코드리뷰관 (2명 병렬) | - |
+| **에러 해결 완료** | 노션기록관 + 슬랙배달관 (2명 병렬 — 복습카드관 폐지) | - |
+| **작업 완료** | 슬랙배달관 (1명 — 복습카드관 자동 트리거 폐지) | - |
+| **PreToolUse** | 경비원 (Write/Edit 시) | - |
+| **월 1회 (매월 1일 10:23 launchd 자동)** | 외주 감사관 (1명) — `com.haemilsia.monthly-system-audit` 헤드리스 실행 → `reviews/system-audit-YYYYMM.md` (2026-07-07 자동화. 수동: `/agent system-auditor`) | - |
+| **"정리해줘" (단독)** | 복습카드관 (수동 요청 시만 — 자동 트리거는 2026-07-07 폐지) | - |
+| **"환경 정리", "파일 정리"** | 청소원 | - |
+| **"정리" + 맥락 애매** | 매니저가 "학습 정리? 환경 정리?" 1회 확인 | - |
+| **Haiku/Sonnet 실패** | 자문전문가 (빠른 판별 통과 시) → 진단 후 재시도 or 승급 | - |
+
+---
+
+## 4. 수동 오버라이드 명령어
+
+| 명령 | 효과 |
+|------|------|
+| `/agent {id}` | 해당 팀원 단독 dispatch |
+| `/agent {id1} {id2}` | 복수 팀원 병렬 dispatch |
+| "순차로 해" | 병렬 해제, 순서대로 실행 |
+| "수동으로 해줘" | 자동 라우팅 중단, 매니저가 추천 1~3개 제시 |
+| "뭐 써야 돼?" | 상황 분석 + 추천 3개 (1/2/3순위) |
+| `/agent system-auditor` | 외주 감사 즉시 실행 |
+
+**수동 모드 시 매니저 필수 행동**: 추천 1~3개 + 이유 1줄 + 모델 등급 + 예상 소요 제시. 대표님 명시 호출은 무조건 실행 + soft 대안 1줄.
+
+---
+
+## 5. 에스컬레이션 체인
+
+```
+Haiku 실패 → [빠른 판별] → 자문전문가 진단 (5초) → 조정 후 Haiku 재시도 or Sonnet 승급
+Sonnet 실패 → [빠른 판별] → 자문전문가 진단 (5초) → 조정 후 Sonnet 재시도 or Opus 승급
+Opus 실패 → 자문 스킵 → 매니저가 대표님께 수동 개입 요청
+```
+
+### 빠른 판별 (자문 스킵 → 바로 승급)
+에러에 `timeout`, `rate_limit`, `context_length_exceeded`, `model_capacity`, `too many tokens`, `overloaded` 포함 시 자문전문가 개입 없이 즉시 모델 승급.
+
+### 자문전문가 규칙
+- 자문 개입은 **1회만** (자문 후 재시도도 실패 → 기존 모델 승급)
+- 자문전문가 본인 실패 → 스킵하고 기존 승급 진행
+- 진단 타임아웃: **5초**
+
+### 기본 규칙
+- 같은 팀원 재dispatch 최대 2회
+- 타임아웃: Haiku 10초 / Sonnet 25초 / Opus 45초
+- 모든 에스컬레이션 → 에러로그 DB 자동 기록
+- **Notion 읽기 실패는 에스컬레이션 안 함** — 1회 타임아웃 → 즉시 폴백 (캐시 참조)
+
+### 🆕 모델 정책 (2026-04-25 v2)
+
+| 시나리오 | 모델 / 폴백 | 근거 |
+|---------|------------|------|
+| Write/Edit 권한 필요 에이전트 (notion-writer, handoff-scribe 등) | **Sonnet 기본** | Haiku 권한 거부 12회 재발 → 2026-04-25 정책 전환 (P2 사전검증 3/3 PASS) |
+| Sonnet 5xx (rate limit, model unavailable) | Haiku 폴백 1회 자동 | 매니저에게 fallback 알림 inject |
+| Haiku 폴백 후에도 권한 거부 시 | 매니저 직접 처리로 에스컬레이션 | (현재 패턴 유지) |
+| EXEMPT 경로(handoffs/queue/memory 등)에서 Edit/Write 거부 | **즉시 매니저 직접 처리** (재시도 금지) | 2026-04-27 박제: bypassPermissions 자동 상속 실패 케이스 발견 |
+
+> **Agent 호출 권장 패턴** (2026-04-27 박제): Edit/Write 필요한 에이전트 dispatch 시 **`mode: "bypassPermissions"` 파라미터 명시** (보험). 그래도 거부 발생 → 즉시 매니저 직접 처리. 진단 절차 상세: `feedback_agent_dispatch_mode_v1.md` (v3)
+>
+> **거짓 보고 가드** (2026-04-25 박제): 서브에이전트가 hook 차단을 "권한 정상"으로 거짓 성공 보고하는 패턴 발견. 검증 작업 후 매니저는 **반드시 실제 결과(파일 변경, DB row 등)로 교차 확인**. 상세: `feedback_subagent_false_report_v1.md`
+
+---
+
+## 6. 모델 비중
+
+| 등급 | 수 | 비용 비중 |
+|------|-----|---------|
+| Haiku (인턴) | 7명 | ~15% |
+| Sonnet (팀장) | 6명 | ~30% |
+| Opus (임원) | 6명 | ~50% |
+| 매니저 (Opus) | 1명 | ~5% |
+
+---
+
+## 7. 운영 원칙
+
+1. 복습카드관은 Opus 고정 (대표님 결정: 학습 품질 최우선) — 단, 2026-07-07부터 **수동 "복습해줘" 요청 시에만** 실행 (자동 트리거 폐지, B12)
+2. 학습/복습 관련 에이전트는 비용 절감 대상 아님
+3. 분위기메이커: 억지 유머 금지, 적시성 > 빈도, 쿨다운 20분, 하루 최대 5회
+4. 외주 감사관: 매니저와 완전 독립, 결과 수정 불가, 대표님 직접 보고
+5. 경비원: REF 훅 삭제 안 함, 상위 해석 layer
+6. 청소원: 삭제 금지 기본값, archive 이동만. 오늘 날짜 파일 건드리지 않음
+7. Notion 읽기 실패 → 에스컬레이션 없이 폴백 (캐시 참조)
+8. 대표님 대기시간 최소화 — 1명 지연 시 부분 응답 가능
+9. 에이전트 프로필은 dispatch 시에만 읽고, 매니저 context에 캐시하지 않음
+10. **Haiku + Write/Edit tool 조합 에이전트는 프로필에 「권한 자체 판단 금지」 강제 규칙 박제 필수** (2026-04-22 추가) — Haiku 모델이 VSCode 세션 등에서 "권한 없을 것 같다"고 자체 추론으로 Write 호출을 포기하는 오류 반복. 신규 Haiku+Write 에이전트 추가 시 `notion-writer.md` 「권한 자체 판단 절대 금지」 섹션 그대로 복사. 실증 근거: 2026-04-22 A/B/C 테스트에서 general-purpose 에이전트는 동일 경로 쓰기 100% 성공, notion-writer(Haiku)만 실패 → 실제 권한 차단 아닌 모델 인지 오류 확정.
+
+11. **에이전트 프롬프트 내 ID 참조 우선** (2026-04-22 추가) — 에이전트가 규칙·워크플로우 참조 시 자연어("B4 규칙") 대신 정식 ID("R-B4")를 사용. 오해석 방지 + 규칙위반 DB 자동 집계와 정합. ID 레지스트리: `env-info.md ## 📇 ID 레지스트리`. 조회 도구: `~/.claude/code/id-lookup_v1.sh <ID>`. 규약: `plans/id-system-spec_v1.md`.
+
+*agent.md v2.5 | C+ Agent System | 2026-07-07 | 도구추천관→모델추천관 전환(ID 유지) + 복습카드관 자동 트리거 폐지(B12)*
