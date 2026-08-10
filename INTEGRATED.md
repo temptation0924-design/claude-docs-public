@@ -3,7 +3,7 @@
 > **이 파일은 8개 시스템 문서의 자동 빌드 통합본입니다.**
 > 원본: `~/.claude/*.md` (Git 리포지토리 = Single Source of Truth)
 > 수정은 **원본에서만**. 이 파일은 `build-integrated_v1.sh`가 자동 재생성합니다.
-> 마지막 빌드: 2026-08-09 11:00 KST
+> 마지막 빌드: 2026-08-10 23:46 KST
 
 ## 📑 목차
 1. **CLAUDE.md** — 라우팅 허브 (역할 + 도구 계층 + 파일 라우팅 + 모드 시스템)
@@ -627,7 +627,8 @@ tail -30 /tmp/claude-b8-debounce.log | grep BUILD_SUCCESS
    - → 단순 작업은 Agent spawn 없이 **매니저가 직접** (spawn 오버헤드 0)
    - → Notion 지연 시: 1회 타임아웃 → 즉시 폴백 (캐시 참조). **이 폴백은 루틴상 정상 동작이며 B3(세션 시작 루틴 미실시) 위반이 아니다** — TOP5 조회를 *시도*했으므로 루틴은 실행된 것 (Notion 404/타임아웃은 외부 의존성 실패 R-A2 L4). `session-end-check.sh`가 `top5_queried != true`만 보고 emit하는 `⚠️ B3 ...(캐시 폴백 시 정상)` 경고는 **오탐** → 규칙감시관/핸드오프작성관이 제외. (2026-06-26 박제)
    - 🆕 **매일 첫 세션**: `[청소원 Sonnet]` Agent dispatch (환경 점검, 복잡 판단)
-   - 🆕 **미싱크/drift handoffs 재시도**: `notion_synced: false` 또는 mtime-drift(`mtime > notion_synced_at`) 파일 발견 시 `[노션기록관 Haiku]` dispatch → 사전 체크 로직(CREATE/UPDATE/SKIP) 자동 판정 + queue/ consume (최대 3회)
+   - 🆕 **미싱크/drift handoffs 재시도**: 판정은 **즉석 구현 금지** — `python3 ~/.claude/code/handoff_sync_check_v1.py` 출력만 신뢰한다 (`UNSYNC`=CREATE 대기, `DRIFT`=싱크 후 편집됨·UPDATE 대기). `UNSYNC` 발견 시 `[노션기록관 Haiku]` dispatch → 사전 체크 로직(CREATE/UPDATE/SKIP) 자동 판정 + queue/ consume (최대 3회). `DRIFT`는 B2가 아니므로 내용 변경이 실제로 있을 때만 UPDATE.
+     > ⚠️ **맨 `mtime > notion_synced_at` 비교 금지** (2026-08-09 오판 수정): 싱크는 항상 "① 노션 기록 → ② 로컬 frontmatter 패치" 순서라 **정상 싱크도 mtime이 `notion_synced_at`보다 늦다**(실측 99초, 119건 중 82건). 허용오차 0으로 재판정하면 이미 싱크된 파일을 영구 미싱크로 오판한다. 판정기는 600초 grace를 적용한다.
 
 2. **매니저가 결과 병합 + 통합 응답 출력**:
    - TOP 5 표 (규칙감시관) + 관련 메모리 (기억관리관) + 지침 요약 (지침사서) + 환경 리포트 (청소원, 해당 시) + 환영 한 줄 (분위기메이커)
@@ -1797,4 +1798,4 @@ Opus 실패 → 자문 스킵 → 매니저가 대표님께 수동 개입 요청
 
 ---
 
-*자동 빌드: `build-integrated_v1.sh` v1.0 | 빌드 시각: 2026-08-09 11:00 KST | 원본: `~/.claude/*.md` (Git)*
+*자동 빌드: `build-integrated_v1.sh` v1.0 | 빌드 시각: 2026-08-10 23:46 KST | 원본: `~/.claude/*.md` (Git)*
