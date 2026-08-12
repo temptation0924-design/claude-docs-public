@@ -3,7 +3,7 @@
 > **이 파일은 8개 시스템 문서의 자동 빌드 통합본입니다.**
 > 원본: `~/.claude/*.md` (Git 리포지토리 = Single Source of Truth)
 > 수정은 **원본에서만**. 이 파일은 `build-integrated_v1.sh`가 자동 재생성합니다.
-> 마지막 빌드: 2026-08-12 10:37 KST
+> 마지막 빌드: 2026-08-12 10:38 KST
 
 ## 📑 목차
 1. **CLAUDE.md** — 라우팅 허브 (역할 + 도구 계층 + 파일 라우팅 + 모드 시스템)
@@ -611,7 +611,14 @@ tail -30 /tmp/claude-b8-debounce.log | grep BUILD_SUCCESS
 > ```bash
 > eval "$(bash ~/.claude/code/session_paths.sh --export)"   # → SESSION_START_FILE / WORKLOG_FILE / SESSION_SCOPE
 > ```
-> 키는 `CLAUDE_PROJECT_DIR`(훅에 워크트리 루트로 주입). 훅 stdin의 `.cwd`·셸 `$PWD`는 세션 중 `cd`를 따라가므로 키로 쓸 수 없다. `CLAUDE_PROJECT_DIR` 미설정 시 구 전역 경로로 폴백.
+> 키는 `CLAUDE_PROJECT_DIR`(훅에 워크트리 루트로 주입). 훅 stdin의 `.cwd`·셸 `$PWD`는 세션 중 `cd`를 따라가므로 키로 쓸 수 없다.
+>
+> 🆕 **세션ID 포인터 (2026-08-12 v2, ERR-68 근본수정)**: 위 08-08 수정은 **훅 경로만** 덮었다 — `CLAUDE_PROJECT_DIR`은 매니저·서브에이전트의 비대화형 셸엔 주입되지 않아(실측 UNSET) 그쪽은 조용히 전역 폴백했다. 이제 `CLAUDE_PROJECT_DIR`이 있을 때 `.session/by-id/<세션ID> → 슬러그` 포인터를 남기고, 없을 때는 `CLAUDE_CODE_SESSION_ID`(매니저·훅 양쪽 셸에 모두 존재)로 그 포인터를 되짚어 같은 스코프를 복원한다.
+> - 포인터가 가리켜도 `<슬러그>.start`가 없으면 **기각**한다 (유령 스코프 차단)
+> - 복원 실패 시에만 전역 폴백하며, `--export` 경로는 **stderr 경고**를 낸다. `source` 경로는 무음 — `session-tracker-log.sh`가 **PostToolUse**로 매 도구호출마다 부르므로 스팸이 된다
+> - **cwd·git 추론은 쓰지 않는다**: cwd가 메인 리포로 새면 `claude-<해시>`라는 *실재하는 남의 스코프*를 조용히 집어들어 지금보다 나쁘다. 틀린 칸을 자신 있게 여느니 전역으로 떨어지고 시끄럽게 구는 쪽이 안전하다
+> - 한 세션이 도중에 다른 워크트리로 옮기면 포인터도 따라 갱신된다 (내용 대조 후 변경 시에만 write — "파일 있으면 스킵"으로 최적화하면 옛 스코프에 박제되어 사고가 재현된다)
+> - 회귀테스트: `bash ~/.claude/code/test_session_paths_v1.sh` (20건, 샌드박스 HOME 격리)
 >
 > **🆕 v2.0 SessionStart 훅 (2026-04-19 작성 → ⚠️ 2026-07-07에야 settings.json 정식 배선 — 그전엔 미실행 상태였음)**:
 > - **훅 D** (`violation-prevention-inject.sh`): MEMORY.md TOP 3 위반 + 최근 handoff 미완료 키워드 매칭 → 해당 규칙 경고 주입 (2026-07-07 메모리 경로 버그 수정)
@@ -1798,4 +1805,4 @@ Opus 실패 → 자문 스킵 → 매니저가 대표님께 수동 개입 요청
 
 ---
 
-*자동 빌드: `build-integrated_v1.sh` v1.0 | 빌드 시각: 2026-08-12 10:37 KST | 원본: `~/.claude/*.md` (Git)*
+*자동 빌드: `build-integrated_v1.sh` v1.0 | 빌드 시각: 2026-08-12 10:38 KST | 원본: `~/.claude/*.md` (Git)*
