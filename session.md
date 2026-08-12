@@ -1,6 +1,6 @@
 # session.md — 세션 루틴 + 기록 규칙
 
-업데이트: 2026-08-08 | v5.5 — 세션 tracker 워크트리 단위 스코프 전환 (전역오염 근본수정, `code/session_paths.sh` 신설) + SESSION_RESUME 접기(연속 재시작 1줄) · 구 v5.3(2026-07-07): 훅 D/E 정식 배선 + handoff-guard 신설 + 모델 추천 전환(B4) + 복습카드 폐지(B12)
+업데이트: 2026-08-12 | v5.6 — `session_paths.sh` 세션ID 포인터 보강 (ERR-68: 매니저 셸 전역 폴백 → 병행 세션 worklog 오취득·삭제 위험 차단, 회귀테스트 `code/test_session_paths_v1.sh` 20건) · 구 v5.5(2026-08-08): 세션 tracker 워크트리 단위 스코프 전환 + SESSION_RESUME 접기(연속 재시작 1줄) · 구 v5.3(2026-07-07): 훅 D/E 정식 배선 + handoff-guard 신설 + 모델 추천 전환(B4) + 복습카드 폐지(B12)
 
 ---
 
