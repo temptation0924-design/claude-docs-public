@@ -110,7 +110,7 @@ echo "[$(date +%H:%M)] ERROR: 노션기록관 큐 재시도 오진단 | MCP,Noti
      eval "$(bash ~/.claude/code/session_paths.sh --export)"
      grep '^\[.*\] ERROR:' "$WORKLOG_FILE" 2>/dev/null   # 결과를 workflow args의 error_lines로 주입
      ```
-     핸드오프작성관이 루틴 끝에 `$WORKLOG_FILE`을 **삭제**하므로, Stage 2의 노션기록관에겐 읽을 스코프 파일이 남지 않는다. 이때 에이전트가 전역 `~/.claude/.session_worklog`로 폴백하면 **다른 세션의 로그**를 이 세션 것으로 검사한다 (2026-08-13 6차 실증: 같은 날 10:39 iris-excel-sync 세션 로그를 읽음 — 양쪽 0건이라 결론만 우연히 맞음). **추출은 삭제 전에, 근거는 주입으로.**
+     핸드오프작성관이 루틴 끝에 `$WORKLOG_FILE`을 **삭제**하므로, Stage 2의 노션기록관에겐 읽을 스코프 파일이 남지 않는다. 이때 에이전트가 전역 `~/.claude/.session_worklog`로 폴백하면 **타 워크트리 세션의 로그**를 이 세션 것으로 검사한다 (2026-08-13 6차 실증 — 양쪽 다 ERROR 0건이라 결론만 우연히 맞고 과정은 틀렸다). **추출은 삭제 전에, 근거는 주입으로.**
    - ~~`[복습카드관 Opus]`~~ — **폐지 (2026-07-07, B12)** — 수동 "복습해줘" 요청 시에만
    - → 예상 소요: **5~8초**
 
