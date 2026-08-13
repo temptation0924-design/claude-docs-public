@@ -3,7 +3,7 @@
 > **이 파일은 8개 시스템 문서의 자동 빌드 통합본입니다.**
 > 원본: `~/.claude/*.md` (Git 리포지토리 = Single Source of Truth)
 > 수정은 **원본에서만**. 이 파일은 `build-integrated_v1.sh`가 자동 재생성합니다.
-> 마지막 빌드: 2026-08-12 10:38 KST
+> 마지막 빌드: 2026-08-13 16:08 KST
 
 ## 📑 목차
 1. **CLAUDE.md** — 라우팅 허브 (역할 + 도구 계층 + 파일 라우팅 + 모드 시스템)
@@ -1251,7 +1251,7 @@ https://www.notion.so/8259bedb061e4dc59ce17d6df200dfd9?v=14499653d3d64ed285bc3db
 **💡 임대점검 2중 체계**: 간편(v1.0, Railway 07:30 자동) + 빡센(v2.0, 29항목 수동)
 
 ### 🤖 자동화 (5개)
-- `taeheung-image-gen` — 🖼️ 태흥 블로그 이미지 근거 생성 (3층 체계: 실사 주력 / 나노바나나 Pro 제품컷 / Soul 2.0 사용장면 카테고리당 1~2장). 브리프 접지 → 힉스필드 생성 → 2축 검수(fit·topic ≥3.0) → zgen_ 입고. 트리거: "생성해줘"(태흥 문맥)/"사용장면 만들어줘"/"이미지 풀 생성으로 채워줘"/LOW_STOCK·low_score 경보 후. 실사 승격은 README.taeheung §4 별도 경로 (2026-08-04 신설)
+- `taeheung-image-gen` — 🖼️ 태흥 블로그 이미지 근거 생성 (3층 체계: 실사 주력 / 나노바나나 Pro 제품컷 / Soul 2.0 사용장면 카테고리당 1~2장). 브리프 접지 → 힉스필드 생성 → 2축 검수(fit·topic ≥3.0) → zgen_ 입고. 트리거: "생성해줘"(태흥 문맥)/"사용장면 만들어줘"/"이미지 풀 생성으로 채워줘"/LOW_STOCK·low_score 경보 후. 실사 승격은 README.taeheung §4 별도 경로. **생성 전 프라이버시 재판정 먼저** — 실사가 privacy로 묶여 있으면 `promote_photos --dry-run --unmask`가 오탐을 회수한다(08-13: 291장 중 273장 회수) (2026-08-04 신설 / 08-13 갱신)
 - `slack-info-briefing-builder` — 슬랙 브리핑, RSS 봇
 - `landing-page-deploy` — 랜딩페이지 Netlify + Notion 연동
 - `pwa-spawn` — 🍳 요리책 PWA 패턴(YouTube URL → AI 분석 → 큐레이션 라이브러리) 도메인 복제. Step 0 supanova-design-engine 필수. AI 공부/부동산 임장/운동 영상 정리 등 spawn (2026-05-18 신설)
@@ -1806,4 +1806,4 @@ Opus 실패 → 자문 스킵 → 매니저가 대표님께 수동 개입 요청
 
 ---
 
-*자동 빌드: `build-integrated_v1.sh` v1.0 | 빌드 시각: 2026-08-12 10:38 KST | 원본: `~/.claude/*.md` (Git)*
+*자동 빌드: `build-integrated_v1.sh` v1.0 | 빌드 시각: 2026-08-13 16:08 KST | 원본: `~/.claude/*.md` (Git)*
