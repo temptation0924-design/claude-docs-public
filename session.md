@@ -92,7 +92,7 @@ echo "[$(date +%H:%M)] ERROR: 노션기록관 큐 재시도 오진단 | MCP,Noti
 
 > 🆕 **Workflow 오케스트레이션 옵션 (2026-07-07 대표님 옵트인)**: 아래 Stage 1~2 전체를 `Workflow({scriptPath: "~/.claude/workflows/session-end.workflow.js"})` 호출 한 번으로 실행 가능 — Stage 1 병렬 → Stage 2 순차가 스크립트로 결정적 보장 + 진행상황 트리 표시. 수동 다중 Agent dispatch는 폴백 경로.
 >
-> 🆕 **조기 폴백 게이트 (2026-07-19 신설 — 2026-07-17 4시간 stall 사고 재발방지)**: session-end-cplus workflow는 **1회만 호출**한다. Stage 1 결과가 stall/실패면(에이전트 반환 null, 또는 호출 후 **5분 내 완료 통지 없음**) 매니저는 **workflow를 재호출하지 말고 즉시 개별 Agent 순차 dispatch로 폴백**한다(규칙감시관 → 핸드오프작성관 → 노션기록관 → 슬랙배달관).
+> 🆕 **조기 폴백 게이트 (2026-07-19 신설 — 2026-07-17 4시간 stall 사고 재발방지)**: session-end-cplus workflow는 **1회만 호출**한다. Stage 1 결과가 stall/실패면(에이전트 반환 null, 또는 호출 후 **5분 내 완료 통지 없음**) 매니저는 **workflow를 재호출하지 말고 즉시 개별 Agent 순차 dispatch로 폴백**한다(핸드오프작성관 → 노션기록관 → 규칙감시관 → 슬랙배달관 — 2026-08-13 감시관 Stage 2 이동 반영).
 > - **근본원인(2026-07-17 규명, 트랜스크립트 18개 전수분석)**: 6/6 stall은 코드 버그가 아니라 **워크플로우 서브에이전트의 추론(inference) 호출 stall** — tool_result 수신 후 다음 모델 응답이 445~1,956초 무응답(18개 전부 동일 패턴, tool 실행은 +0초 정상). harness가 180초 무진행마다 자동 재시도(각 6회=18회)하며 4시간 소모. 재시도는 같은 인프라 stall을 못 풀어 **무의미** → 조기 폴백이 유일 해법. 개별 Agent는 매니저가 직접 감시하므로 stall 시 즉시 인지·중단 가능.
 >
 > 🆕 **야간 안전망 (2026-07-07)**: 세션 종료 시 Notion 싱크가 누락/실패해도 launchd `com.haemilsia.notion-handoff-sync`(매일 03:17)가 미싱크 handoff를 일괄 CREATE 싱크 (env-info.md 「로컬 자동화」 참조).
