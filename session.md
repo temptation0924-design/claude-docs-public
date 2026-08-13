@@ -100,7 +100,7 @@ echo "[$(date +%H:%M)] ERROR: 노션기록관 큐 재시도 오진단 | MCP,Noti
 ### C+ 병렬 dispatch 루틴
 
 1. **자체 점검**: 오늘 TOP 5 패턴 중 어긴 것 확인 (매니저가 직접 판단)
-2. **Stage 1 — 매니저가 필수 2명 + 조건부 1명 dispatch** (병렬):
+2. **Stage 1 — 매니저가 필수 1명 + 조건부 1명 dispatch**:
    - `[핸드오프작성관 Sonnet]` — `$WORKLOG_FILE` 참조 → `~/.claude/handoffs/세션인수인계_YYYYMMDD_N차_v1.md` 생성 (frontmatter 포함) → `$WORKLOG_FILE` 삭제
      - ⚠️ **dispatch 프롬프트에 `SESSION_START_FILE`·`WORKLOG_FILE` 절대경로를 반드시 명시**한다 (매니저가 `session_paths.sh --export`로 해석해 전달). 서브에이전트가 스스로 추론하면 워크트리 경계를 넘어 엉뚱한 파일을 읽고 지운다 — 2026-08-08 근본수정
        > 🔴 **이건 권고가 아니다**: 2026-08-12 ERR-68에서 **매니저 셸 자체가** 전역 폴백해, 병행 세션이 4시간 동안 쌓은 worklog 20건을 제 것으로 기재하고 루틴 끝에 삭제할 뻔했다(사전 발견·미발생). v5.6 포인터 복원이 1차 방어선이고, 절대경로 명시는 그게 실패했을 때의 2차 방어선이다. 둘 다 지킬 것.
