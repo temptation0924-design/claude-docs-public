@@ -105,6 +105,12 @@ echo "[$(date +%H:%M)] ERROR: 노션기록관 큐 재시도 오진단 | MCP,Noti
      - ⚠️ **dispatch 프롬프트에 `SESSION_START_FILE`·`WORKLOG_FILE` 절대경로를 반드시 명시**한다 (매니저가 `session_paths.sh --export`로 해석해 전달). 서브에이전트가 스스로 추론하면 워크트리 경계를 넘어 엉뚱한 파일을 읽고 지운다 — 2026-08-08 근본수정
        > 🔴 **이건 권고가 아니다**: 2026-08-12 ERR-68에서 **매니저 셸 자체가** 전역 폴백해, 병행 세션이 4시간 동안 쌓은 worklog 20건을 제 것으로 기재하고 루틴 끝에 삭제할 뻔했다(사전 발견·미발생). v5.6 포인터 복원이 1차 방어선이고, 절대경로 명시는 그게 실패했을 때의 2차 방어선이다. 둘 다 지킬 것.
    - `[노션기록관 Haiku(2)]` — ⚡ **자동 트리거**: `$WORKLOG_FILE`에 `ERROR:` 라인 1건 이상 → 강제 dispatch (skip 금지). 0건이면 스킵
+   - 🔴 **매니저는 Stage 1 dispatch 전에 `ERROR:` 라인을 추출해 손에 쥔다** (2026-08-13 ERR-68 재발 근본수정):
+     ```bash
+     eval "$(bash ~/.claude/code/session_paths.sh --export)"
+     grep '^\[.*\] ERROR:' "$WORKLOG_FILE" 2>/dev/null   # 결과를 workflow args의 error_lines로 주입
+     ```
+     핸드오프작성관이 루틴 끝에 `$WORKLOG_FILE`을 **삭제**하므로, Stage 2의 노션기록관에겐 읽을 스코프 파일이 남지 않는다. 이때 에이전트가 전역 `~/.claude/.session_worklog`로 폴백하면 **다른 세션의 로그**를 이 세션 것으로 검사한다 (2026-08-13 6차 실증: 같은 날 10:39 iris-excel-sync 세션 로그를 읽음 — 양쪽 0건이라 결론만 우연히 맞음). **추출은 삭제 전에, 근거는 주입으로.**
    - ~~`[복습카드관 Opus]`~~ — **폐지 (2026-07-07, B12)** — 수동 "복습해줘" 요청 시에만
    - → 예상 소요: **5~8초**
 
