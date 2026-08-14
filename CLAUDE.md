@@ -58,7 +58,17 @@
 
 > **리포 2개 체제 (2026-08-09 분리)**: 원본 `claude-system-docs`는 **private** — 핸드오프·메모리·업무기록이 들어 있어 공개 금지. Claude.ai가 읽는 `claude-docs-public`은 **공개 미러**로, 지침 md 12종만 담는다(`INTEGRATED.md`·`CLAUDE-core_v1.md`·개별 7종·`on-demand/` 3종). 미러에 업무 기록을 넣지 말 것. 경위: 메모리 `project-public-repo-privacy-exposure`.
 
-> **원본**: Git 리포지토리(`~/.claude/`)가 유일한 원본. 수정 시 → Git 파일 먼저 수정 → `build-integrated_v1.sh --push`로 공개 미러 재빌드·푸시 (~10초). Notion 개별 백업 7페이지는 2026-04-12 폐기 (비효율). Notion은 DB 기록 전용 (작업기록/에러로그/규칙위반).
+> **원본**: Git 리포지토리(`~/.claude/`)가 유일한 원본. 수정 시 → Git 파일 먼저 수정 → `build-integrated_v1.sh --push`로 재빌드 (~10초). 사설 원본 리포는 이때 자동 push된다.
+
+> **🔒 공개 게시는 승인 게이트를 통과해야 한다 (2026-08-14 신설)**: `--push`는 공개 미러(`claude-docs-public`)에 **커밋까지만** 하고 멈춘다. 인터넷 게시는 대표님 승인이 있어야 한다.
+> ```bash
+> bash ~/.claude/code/approve-docs-publish_v1.sh          # 대기분 확인 + 대화형 승인
+> bash ~/.claude/code/approve-docs-publish_v1.sh --show    # 확인만
+> bash ~/.claude/code/approve-docs-publish_v1.sh --reject   # 대기분 폐기
+> ```
+> 경위: 훅(`debounce_sync`·`session-end-check`)이 시스템 md 편집을 감지하면 30초 뒤 자동으로 공개 리포까지 push했다 — 대표님이 게시를 승인한 적 없이 인터넷에 올라가는 구조였고, 이 리포는 이전에 프라이버시 노출 사고가 있었다(메모리 `project-public-repo-privacy-exposure`). 훅은 비대화형이라 프롬프트를 못 띄우므로 **커밋 후 대기표**를 남기고, 세션 시작 훅이 대기분을 매니저에게 알려 대표님께 여쭙게 한다. 승인 스크립트는 push 직전 시크릿·업무기록 자가점검을 한 번 더 돌린다.
+
+> Notion 개별 백업 7페이지는 2026-04-12 폐기 (비효율). Notion은 DB 기록 전용 (작업기록/에러로그/규칙위반).
 
 ---
 
