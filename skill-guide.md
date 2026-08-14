@@ -57,7 +57,7 @@
 
 ### 🏢 해밀시아 (9개)
 - `haemilsia-rental-inspection` — 임대점검, 일일점검, DB점검, 점검보고서, 검증해줘
-- `iris-excel-sync` — 아이리스공실 엑셀 이미지 → Notion DB 동기화 (diff·매핑·확인 게이트·보정)
+- `iris-excel-sync` — 아이리스공실 엑셀 이미지 → Notion DB 동기화 (diff·매핑·확인 게이트·보정) — v2.3 (2026-08-14): 퇴거일 컬럼 "완료" 단독=일반임대 가능 매핑 추가
 - `haemilsia-bot-dev` — 해밀봇 기능 추가, 명령어 추가, Block Kit, 드릴다운
 - `haemilsia-bot-deploy` — 봇 배포, Railway 배포, 환경변수 수정
 - `railway-notion-connect` — Railway↔Notion 연동, 503/401/404 디버깅
