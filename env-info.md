@@ -261,7 +261,7 @@ https://www.notion.so/8259bedb061e4dc59ce17d6df200dfd9?v=14499653d3d64ed285bc3db
 | 상태 파일 | `~/.claude/rules/api-keys-state.json` |
 | 노션 장부 DB | `33f7f080-9621-8131-8bca-e6f16628ea9c` |
 | `.zshrc` 블록 마커 | `# >>> claude api-key-manager >>>` / `# <<< claude api-key-manager <<<` |
-| 관리 대상 키 (7개) | `NOTION_API_TOKEN`, `REF_NOTION_TOKEN`, `CLAUDE_CODE_SLACK_TOKEN`, `FIGMA_ACCESS_TOKEN`, `GEMINI_API_KEY`, `YOUTUBE_API_KEY`, `HAEMILSIA_SLACK_WEBHOOK` |
+| 관리 대상 키 | **Keychain 네임스페이스 전량 자동 스캔** (하드코딩 목록 아님). 현재 33개 — 실물 확인은 `api-key-manager_v1.sh list` (값 미출력) |
 | 엔트리 스크립트 | `~/.claude/code/api-key-manager_v1.sh` |
 | SessionStart 훅 | `~/.claude/hooks/api-key-health-check.sh` (하루 1회) |
 
