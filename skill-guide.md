@@ -72,7 +72,7 @@
 - `slack-info-briefing-builder` — 슬랙 브리핑, RSS 봇
 - `landing-page-deploy` — 랜딩페이지 Netlify + Notion 연동
 - `pwa-spawn` — 🍳 요리책 PWA 패턴(YouTube URL → AI 분석 → 큐레이션 라이브러리) 도메인 복제. Step 0 supanova-design-engine 필수. AI 공부/부동산 임장/운동 영상 정리 등 spawn (2026-05-18 신설)
-- `blog-keyword-monthly` — 📝 블로그 월간 키워드 자동 선정. 태흥스펀지 파워링크 노출수 상위 → 블로그 1페이지 우리글(haemilsia2277) 없는 키워드만 → 그 달 월·목 전체 배정 → 해밀시아블로그DB 기록. 트리거: "블로그 키워드 뽑아줘"/"이번달 블로그 키워드"/"월간 키워드". 월간 리마인더 cron 연동 (2026-06-26 신설)
+- `blog-keyword-monthly` — 📝 블로그 월간 키워드 자동 선정. 태흥스펀지 파워링크 **공식 API 전량 수집** → T시리즈 ON 그룹 + 노출 10↑ → 블로그 1페이지 우리글(haemilsia2277·taeheung0427) 없는 키워드만 → **사진풀 쿼터·지역 월 2건 상한** 통과분 배정 → 해밀시아블로그DB 기록. 레인 2개(haemilsia=월·목 수동 / taeheung=램프업 요일 자동). 트리거: "블로그 키워드 뽑아줘"/"이번달 블로그 키워드"/"월간 키워드". 월간 리마인더 cron 연동 (2026-06-26 신설 · 2026-08-16 모수 개편)
 
 ### 📋 시스템 (3개)
 - `system-docs-sync` — 시스템 문서 수정
